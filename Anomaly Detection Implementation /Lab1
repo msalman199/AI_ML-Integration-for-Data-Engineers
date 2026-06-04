@@ -1,0 +1,492 @@
+ Anomaly Detection Implementation
+Prerequisites
+Basic Python programming knowledge
+Understanding of data structures (arrays, dataframes)
+Familiarity with command-line operations
+Basic statistics concepts (mean, standard deviation)
+Linux command-line experience
+Learning Objectives
+By completing this lab, you will:
+
+Implement anomaly detection algorithms on streaming data
+Train and evaluate unsupervised machine learning models
+Identify outliers using statistical and ML-based approaches
+Validate model performance with appropriate metrics
+Environment Setup
+Step 1: Install Required Software
+# Update package manager
+sudo apt update
+
+# Install Python and pip
+sudo apt install -y python3 python3-pip python3-venv
+
+# Create project directory
+mkdir ~/anomaly-detection-lab
+cd ~/anomaly-detection-lab
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install required libraries
+pip install numpy pandas scikit-learn matplotlib seaborn
+Step 2: Verify Installation
+python3 -c "import sklearn; import pandas; import numpy; print('All packages installed successfully')"
+Task 1: Load and Prepare Dataset
+Step 1: Create Synthetic Dataset
+Create a file named generate_data.py:
+
+import numpy as np
+import pandas as pd
+
+def generate_normal_data(n_samples: int, seed: int = 42) -> np.ndarray:
+    """
+    Generate normal data points.
+    
+    Args:
+        n_samples: Number of samples to generate
+        seed: Random seed for reproducibility
+    
+    Returns:
+        Array of normal data points
+    """
+    # TODO: Set random seed
+    # TODO: Generate normal distribution data with mean=50, std=10
+    pass
+
+def inject_anomalies(data: np.ndarray, anomaly_ratio: float = 0.05) -> np.ndarray:
+    """
+    Inject anomalies into the dataset.
+    
+    Args:
+        data: Original data array
+        anomaly_ratio: Proportion of anomalies to inject
+    
+    Returns:
+        Data array with injected anomalies
+    """
+    # TODO: Calculate number of anomalies
+    # TODO: Select random indices for anomalies
+    # TODO: Replace selected points with extreme values (mean ± 3*std)
+    pass
+
+def create_dataset(n_samples: int = 1000) -> pd.DataFrame:
+    """
+    Create complete dataset with features and labels.
+    
+    Args:
+        n_samples: Total number of samples
+    
+    Returns:
+        DataFrame with features and anomaly labels
+    """
+    # TODO: Generate normal data
+    # TODO: Inject anomalies
+    # TODO: Create labels (0=normal, 1=anomaly)
+    # TODO: Create DataFrame with columns: 'value', 'timestamp', 'label'
+    pass
+
+if __name__ == "__main__":
+    df = create_dataset(1000)
+    df.to_csv('data.csv', index=False)
+    print(f"Dataset created: {len(df)} samples")
+    print(f"Anomalies: {df['label'].sum()}")
+Step 2: Implement and Run Data Generation
+Complete the TODO sections in generate_data.py and execute:
+
+python3 generate_data.py
+Step 3: Explore the Dataset
+Create explore_data.py:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def load_and_describe(filepath: str) -> pd.DataFrame:
+    """
+    Load dataset and print basic statistics.
+    
+    Args:
+        filepath: Path to CSV file
+    
+    Returns:
+        Loaded DataFrame
+    """
+    # TODO: Load CSV file
+    # TODO: Print shape, head, and describe()
+    pass
+
+def visualize_data(df: pd.DataFrame, output_file: str = 'data_distribution.png'):
+    """
+    Create visualization of data distribution.
+    
+    Args:
+        df: DataFrame with data
+        output_file: Path to save plot
+    """
+    # TODO: Create histogram of values
+    # TODO: Mark anomalies in different color
+    # TODO: Save figure
+    pass
+
+if __name__ == "__main__":
+    df = load_and_describe('data.csv')
+    visualize_data(df)
+Task 2: Train Anomaly Detection Models
+Step 1: Implement Statistical Method
+Create statistical_detector.py:
+
+import numpy as np
+import pandas as pd
+from typing import Tuple
+
+class ZScoreDetector:
+    """Detect anomalies using Z-score method."""
+    
+    def __init__(self, threshold: float = 3.0):
+        """
+        Initialize detector.
+        
+        Args:
+            threshold: Z-score threshold for anomaly detection
+        """
+        self.threshold = threshold
+        self.mean = None
+        self.std = None
+    
+    def fit(self, X: np.ndarray) -> 'ZScoreDetector':
+        """
+        Calculate mean and standard deviation from training data.
+        
+        Args:
+            X: Training data array
+        
+        Returns:
+            Self for method chaining
+        """
+        # TODO: Calculate and store mean
+        # TODO: Calculate and store standard deviation
+        pass
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """
+        Predict anomalies based on Z-score.
+        
+        Args:
+            X: Data to evaluate
+        
+        Returns:
+            Binary array (1=anomaly, 0=normal)
+        """
+        # TODO: Calculate Z-scores
+        # TODO: Return binary predictions based on threshold
+        pass
+    
+    def score(self, X: np.ndarray) -> np.ndarray:
+        """
+        Return anomaly scores (absolute Z-scores).
+        
+        Args:
+            X: Data to score
+        
+        Returns:
+            Array of anomaly scores
+        """
+        # TODO: Calculate and return absolute Z-scores
+        pass
+Step 2: Implement ML-Based Method
+Create ml_detector.py:
+
+from sklearn.ensemble import IsolationForest
+import numpy as np
+import pandas as pd
+
+class IsolationForestDetector:
+    """Detect anomalies using Isolation Forest algorithm."""
+    
+    def __init__(self, contamination: float = 0.05, random_state: int = 42):
+        """
+        Initialize Isolation Forest detector.
+        
+        Args:
+            contamination: Expected proportion of anomalies
+            random_state: Random seed
+        """
+        # TODO: Initialize IsolationForest with parameters
+        pass
+    
+    def fit(self, X: np.ndarray) -> 'IsolationForestDetector':
+        """
+        Train the Isolation Forest model.
+        
+        Args:
+            X: Training data
+        
+        Returns:
+            Self for method chaining
+        """
+        # TODO: Reshape data if needed (n_samples, n_features)
+        # TODO: Fit the model
+        pass
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """
+        Predict anomalies.
+        
+        Args:
+            X: Data to evaluate
+        
+        Returns:
+            Binary array (1=anomaly, 0=normal)
+        """
+        # TODO: Reshape data if needed
+        # TODO: Get predictions (-1 for anomaly, 1 for normal)
+        # TODO: Convert to binary (1=anomaly, 0=normal)
+        pass
+    
+    def score(self, X: np.ndarray) -> np.ndarray:
+        """
+        Return anomaly scores.
+        
+        Args:
+            X: Data to score
+        
+        Returns:
+            Array of anomaly scores (lower = more anomalous)
+        """
+        # TODO: Reshape data if needed
+        # TODO: Return decision function scores
+        pass
+Step 3: Train Both Models
+Create train_models.py:
+
+import pandas as pd
+import numpy as np
+from statistical_detector import ZScoreDetector
+from ml_detector import IsolationForestDetector
+import pickle
+
+def train_and_save_models(data_file: str):
+    """
+    Train both detectors and save to disk.
+    
+    Args:
+        data_file: Path to training data CSV
+    """
+    # TODO: Load data
+    # TODO: Extract feature values
+    # TODO: Initialize both detectors
+    # TODO: Train both models using fit()
+    # TODO: Save models using pickle
+    pass
+
+if __name__ == "__main__":
+    train_and_save_models('data.csv')
+    print("Models trained and saved successfully")
+Task 3: Evaluate Model Performance
+Step 1: Implement Evaluation Metrics
+Create evaluate.py:
+
+import numpy as np
+import pandas as pd
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+import pickle
+from typing import Dict, Tuple
+
+def load_model(model_path: str):
+    """
+    Load trained model from disk.
+    
+    Args:
+        model_path: Path to pickled model
+    
+    Returns:
+        Loaded model object
+    """
+    # TODO: Load and return model using pickle
+    pass
+
+def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+    """
+    Calculate evaluation metrics.
+    
+    Args:
+        y_true: True labels
+        y_pred: Predicted labels
+    
+    Returns:
+        Dictionary with precision, recall, f1-score
+    """
+    # TODO: Calculate precision
+    # TODO: Calculate recall
+    # TODO: Calculate F1-score
+    # TODO: Return dictionary with all metrics
+    pass
+
+def evaluate_model(model, X: np.ndarray, y_true: np.ndarray, model_name: str) -> Dict:
+    """
+    Evaluate a single model.
+    
+    Args:
+        model: Trained detector model
+        X: Feature data
+        y_true: True labels
+        model_name: Name for reporting
+    
+    Returns:
+        Dictionary with evaluation results
+    """
+    # TODO: Get predictions from model
+    # TODO: Calculate metrics
+    # TODO: Calculate confusion matrix
+    # TODO: Return results dictionary
+    pass
+
+def compare_models(data_file: str):
+    """
+    Compare both models on test data.
+    
+    Args:
+        data_file: Path to test data CSV
+    """
+    # TODO: Load test data
+    # TODO: Load both models
+    # TODO: Evaluate both models
+    # TODO: Print comparison table
+    pass
+
+if __name__ == "__main__":
+    compare_models('data.csv')
+Step 2: Run Evaluation
+python3 evaluate.py
+Step 3: Visualize Results
+Create visualize_results.py:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import pickle
+
+def plot_anomaly_scores(data_file: str, model_paths: list):
+    """
+    Plot anomaly scores from both models.
+    
+    Args:
+        data_file: Path to data CSV
+        model_paths: List of paths to trained models
+    """
+    # TODO: Load data
+    # TODO: Load models
+    # TODO: Get anomaly scores from both models
+    # TODO: Create subplot with scores from both models
+    # TODO: Highlight true anomalies
+    # TODO: Save figure as 'anomaly_scores.png'
+    pass
+
+def plot_confusion_matrices(data_file: str, model_paths: list):
+    """
+    Plot confusion matrices for both models.
+    
+    Args:
+        data_file: Path to data CSV
+        model_paths: List of paths to trained models
+    """
+    # TODO: Load data and models
+    # TODO: Get predictions
+    # TODO: Calculate confusion matrices
+    # TODO: Create side-by-side heatmaps
+    # TODO: Save figure as 'confusion_matrices.png'
+    pass
+
+if __name__ == "__main__":
+    models = ['zscore_model.pkl', 'isolation_forest_model.pkl']
+    plot_anomaly_scores('data.csv', models)
+    plot_confusion_matrices('data.csv', models)
+Verification Steps
+Step 1: Check File Creation
+ls -lh ~/anomaly-detection-lab/
+Expected files:
+
+data.csv
+*.pkl (model files)
+*.png (visualization files)
+All Python scripts
+Step 2: Verify Model Performance
+python3 evaluate.py
+Expected output should show:
+
+Precision > 0.7 for both models
+Recall > 0.6 for both models
+F1-score > 0.65 for both models
+Step 3: Review Visualizations
+ls *.png
+Open and inspect:
+
+data_distribution.png - Should show clear separation of anomalies
+anomaly_scores.png - Should show higher scores for true anomalies
+confusion_matrices.png - Should show diagonal dominance
+Step 4: Test Real-Time Detection
+Create test_streaming.py:
+
+import pickle
+import numpy as np
+
+def simulate_stream(model_path: str, n_points: int = 20):
+    """
+    Simulate real-time anomaly detection.
+    
+    Args:
+        model_path: Path to trained model
+        n_points: Number of points to simulate
+    """
+    # TODO: Load model
+    # TODO: Generate random data points
+    # TODO: Detect anomalies in real-time
+    # TODO: Print results for each point
+    pass
+
+if __name__ == "__main__":
+    simulate_stream('isolation_forest_model.pkl')
+Run the streaming test:
+
+python3 test_streaming.py
+Troubleshooting Tips
+Issue: ImportError for sklearn or pandas
+
+Solution: Ensure virtual environment is activated: source venv/bin/activate
+Issue: Models show poor performance (F1 < 0.5)
+
+Check contamination parameter matches actual anomaly ratio
+Verify data generation includes sufficient anomalies
+Ensure proper train/test split if implemented
+Issue: Visualization files not created
+
+Check matplotlib backend: Add matplotlib.use('Agg') before importing pyplot
+Verify write permissions in directory
+Issue: Memory errors with large datasets
+
+Reduce n_samples in data generation
+Process data in batches for evaluation
+Conclusion
+You have successfully:
+
+Generated synthetic time-series data with injected anomalies
+Implemented two different anomaly detection approaches (statistical and ML-based)
+Trained models on streaming data patterns
+Evaluated model performance using industry-standard metrics
+Visualized detection results and model comparisons
+Key Takeaways:
+
+Statistical methods (Z-score) work well for normally distributed data
+Isolation Forest handles complex, non-linear patterns effectively
+Model selection depends on data characteristics and performance requirements
+Proper evaluation metrics are crucial for anomaly detection systems
+Next Steps:
+
+Experiment with different contamination parameters
+Try additional algorithms (One-Class SVM, Autoencoders)
+Implement sliding window detection for true streaming scenarios
+Add feature engineering for multivariate time-series data
+Additional Resources
+Scikit-learn Anomaly Detection: https://scikit-learn.org/stable/modules/outlier_detection.html
+Isolation Forest Paper: Liu et al., 2008
+Statistical Process Control methods for anomaly detection
