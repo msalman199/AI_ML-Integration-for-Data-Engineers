@@ -1,0 +1,633 @@
+End-to-End AIOps System
+Prerequisites
+Basic Linux command-line skills
+Understanding of Python programming
+Familiarity with REST APIs
+Basic knowledge of SQL databases
+Understanding of distributed systems concepts
+Learning Objectives
+By completing this lab, you will:
+
+Design and implement a complete AIOps architecture
+Build a data ingestion pipeline for operational metrics
+Process streaming data using Apache Spark
+Store time-series data in ClickHouse
+Create REST APIs for data access
+Implement automated workflows and monitoring
+Add failure recovery mechanisms
+Integrate AI-based prediction capabilities
+Environment Setup
+System Requirements
+Linux machine (Ubuntu 20.04+ or similar)
+Minimum 8GB RAM
+20GB free disk space
+Internet connectivity
+Install Required Tools
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python and dependencies
+sudo apt install -y python3 python3-pip python3-venv git curl
+
+# Install Java (required for Spark)
+sudo apt install -y openjdk-11-jdk
+
+# Install Docker (for ClickHouse)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Create project directory
+mkdir -p ~/aiops-lab && cd ~/aiops-lab
+python3 -m venv venv
+source venv/bin/activate
+
+# Install Python packages
+pip install pyspark==3.4.0 clickhouse-driver flask requests pandas numpy scikit-learn schedule
+Start ClickHouse Database
+# Run ClickHouse in Docker
+docker run -d --name clickhouse-server \
+  -p 8123:8123 -p 9000:9000 \
+  --ulimit nofile=262144:262144 \
+  clickhouse/clickhouse-server:latest
+
+# Wait for ClickHouse to start
+sleep 10
+Task 1: Build Data Ingestion and Processing Pipeline
+Step 1: Create Project Structure
+cd ~/aiops-lab
+mkdir -p {data,logs,models,config}
+touch ingestion.py spark_processor.py db_manager.py api_server.py workflow.py monitor.py predictor.py
+Step 2: Implement Data Ingestion Layer
+Create ingestion.py:
+
+import json
+import time
+import random
+from datetime import datetime
+from pathlib import Path
+
+class MetricsIngestion:
+    """Simulates ingestion of operational metrics from various sources"""
+    
+    def __init__(self, output_dir='data'):
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(exist_ok=True)
+        
+    def generate_metrics(self):
+        """
+        Generate simulated operational metrics.
+        TODO: Implement metric generation with realistic patterns
+        Returns: dict with timestamp, service, cpu, memory, latency, error_rate
+        """
+        # TODO: Create metric dictionary with current timestamp
+        # TODO: Add service name (web, api, database, cache)
+        # TODO: Add cpu_usage (0-100), memory_usage (0-100)
+        # TODO: Add latency_ms (50-500), error_rate (0-10)
+        pass
+    
+    def ingest_batch(self, batch_size=100):
+        """
+        Ingest a batch of metrics and save to file.
+        TODO: Generate batch_size metrics and save as JSON lines
+        """
+        # TODO: Generate metrics batch
+        # TODO: Write to file with timestamp in filename
+        # TODO: Return filename
+        pass
+
+# Test ingestion
+if __name__ == '__main__':
+    ingestion = MetricsIngestion()
+    # TODO: Ingest 3 batches of 100 metrics each
+    print("Ingestion complete")
+Step 3: Implement Spark Processing
+Create spark_processor.py:
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, avg, max, min, count, window
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, TimestampType
+
+class SparkProcessor:
+    """Process operational metrics using Apache Spark"""
+    
+    def __init__(self):
+        self.spark = SparkSession.builder \
+            .appName("AIOps-Processor") \
+            .master("local[*]") \
+            .config("spark.driver.memory", "2g") \
+            .getOrCreate()
+        self.spark.sparkContext.setLogLevel("ERROR")
+    
+    def define_schema(self):
+        """
+        Define schema for metrics data.
+        TODO: Create StructType with fields matching ingestion format
+        """
+        # TODO: Define schema with timestamp, service, cpu_usage, memory_usage, latency_ms, error_rate
+        pass
+    
+    def process_metrics(self, input_path):
+        """
+        Process metrics and compute aggregations.
+        TODO: Read JSON data, compute aggregations per service
+        Returns: DataFrame with aggregated metrics
+        """
+        # TODO: Read JSON files using defined schema
+        # TODO: Group by service and compute avg, max, min for each metric
+        # TODO: Add anomaly detection logic (e.g., cpu > 80 or error_rate > 5)
+        # TODO: Return processed DataFrame
+        pass
+    
+    def save_processed(self, df, output_path):
+        """Save processed data as Parquet"""
+        # TODO: Write DataFrame to Parquet format
+        pass
+
+# Test processing
+if __name__ == '__main__':
+    processor = SparkProcessor()
+    # TODO: Process data from data directory
+    print("Processing complete")
+Step 4: Implement ClickHouse Database Manager
+Create db_manager.py:
+
+from clickhouse_driver import Client
+import pandas as pd
+
+class ClickHouseManager:
+    """Manage ClickHouse database operations"""
+    
+    def __init__(self, host='localhost', port=9000):
+        self.client = Client(host=host, port=port)
+        
+    def create_tables(self):
+        """
+        Create necessary tables in ClickHouse.
+        TODO: Create metrics table and aggregated_metrics table
+        """
+        # TODO: Create metrics table with columns:
+        # timestamp DateTime, service String, cpu_usage Float64,
+        # memory_usage Float64, latency_ms Float64, error_rate Float64
+        
+        # TODO: Create aggregated_metrics table with:
+        # service String, avg_cpu Float64, max_cpu Float64,
+        # avg_memory Float64, max_latency Float64, total_errors Float64,
+        # is_anomaly UInt8, processed_at DateTime
+        
+        pass
+    
+    def insert_metrics(self, metrics_list):
+        """
+        Insert raw metrics into database.
+        TODO: Batch insert metrics into metrics table
+        """
+        # TODO: Prepare data for insertion
+        # TODO: Execute INSERT query
+        pass
+    
+    def insert_aggregated(self, df):
+        """
+        Insert aggregated metrics from Spark processing.
+        TODO: Convert DataFrame to list and insert
+        """
+        # TODO: Convert Spark/Pandas DataFrame to list of tuples
+        # TODO: Insert into aggregated_metrics table
+        pass
+    
+    def query_anomalies(self, hours=24):
+        """Query recent anomalies"""
+        # TODO: Query aggregated_metrics where is_anomaly=1
+        # TODO: Return results
+        pass
+
+# Test database
+if __name__ == '__main__':
+    db = ClickHouseManager()
+    db.create_tables()
+    print("Database setup complete")
+Task 2: Build API, Automation, and AI Integration
+Step 1: Implement REST API Server
+Create api_server.py:
+
+from flask import Flask, jsonify, request
+from db_manager import ClickHouseManager
+import json
+
+app = Flask(__name__)
+db = ClickHouseManager()
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({"status": "healthy", "service": "aiops-api"})
+
+@app.route('/metrics', methods=['GET'])
+def get_metrics():
+    """
+    Get recent metrics with optional filtering.
+    TODO: Query parameters: service, limit
+    TODO: Return metrics from database
+    """
+    # TODO: Get query parameters
+    # TODO: Query database with filters
+    # TODO: Return JSON response
+    pass
+
+@app.route('/anomalies', methods=['GET'])
+def get_anomalies():
+    """
+    Get detected anomalies.
+    TODO: Query anomalies from last N hours
+    """
+    # TODO: Get hours parameter (default 24)
+    # TODO: Query anomalies from database
+    # TODO: Return JSON response
+    pass
+
+@app.route('/predict', methods=['POST'])
+def predict_metrics():
+    """
+    Predict future metrics using AI model.
+    TODO: Accept service name, return predictions
+    """
+    # TODO: Get service from request
+    # TODO: Load historical data
+    # TODO: Call predictor module
+    # TODO: Return predictions
+    pass
+
+# Run server
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=False)
+Step 2: Implement Workflow Automation
+Create workflow.py:
+
+import schedule
+import time
+from ingestion import MetricsIngestion
+from spark_processor import SparkProcessor
+from db_manager import ClickHouseManager
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class AIOpsWorkflow:
+    """Automated workflow orchestration"""
+    
+    def __init__(self):
+        self.ingestion = MetricsIngestion()
+        self.processor = SparkProcessor()
+        self.db = ClickHouseManager()
+        
+    def run_pipeline(self):
+        """
+        Execute complete pipeline: ingest -> process -> store.
+        TODO: Implement with error handling and logging
+        """
+        try:
+            # TODO: Ingest new batch of metrics
+            # TODO: Process with Spark
+            # TODO: Store in ClickHouse
+            # TODO: Log success
+            pass
+        except Exception as e:
+            # TODO: Log error
+            # TODO: Implement retry logic
+            pass
+    
+    def cleanup_old_data(self):
+        """
+        Remove data older than retention period.
+        TODO: Delete data older than 7 days
+        """
+        # TODO: Execute DELETE query on ClickHouse
+        pass
+    
+    def schedule_jobs(self):
+        """Schedule automated jobs"""
+        # TODO: Schedule run_pipeline every 5 minutes
+        # TODO: Schedule cleanup_old_data daily
+        pass
+    
+    def start(self):
+        """Start workflow scheduler"""
+        self.schedule_jobs()
+        logger.info("Workflow scheduler started")
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
+
+# Run workflow
+if __name__ == '__main__':
+    workflow = AIOpsWorkflow()
+    workflow.start()
+Step 3: Implement Monitoring and Alerts
+Create monitor.py:
+
+import time
+import logging
+from db_manager import ClickHouseManager
+import requests
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class SystemMonitor:
+    """Monitor system health and send alerts"""
+    
+    def __init__(self):
+        self.db = ClickHouseManager()
+        self.alert_thresholds = {
+            'cpu': 80,
+            'memory': 85,
+            'latency': 400,
+            'error_rate': 5
+        }
+    
+    def check_system_health(self):
+        """
+        Check overall system health.
+        TODO: Query recent metrics and check against thresholds
+        Returns: dict with health status
+        """
+        # TODO: Query last 5 minutes of metrics
+        # TODO: Check each metric against thresholds
+        # TODO: Return health status and issues
+        pass
+    
+    def check_api_health(self):
+        """Check if API server is responding"""
+        try:
+            # TODO: Make request to /health endpoint
+            # TODO: Return status
+            pass
+        except:
+            return False
+    
+    def send_alert(self, alert_type, message):
+        """
+        Send alert notification.
+        TODO: Implement alert mechanism (log, webhook, etc.)
+        """
+        # TODO: Log alert
+        # TODO: Could integrate with webhook/email in production
+        logger.warning(f"ALERT [{alert_type}]: {message}")
+    
+    def monitor_loop(self):
+        """Continuous monitoring loop"""
+        while True:
+            # TODO: Check system health
+            # TODO: Check API health
+            # TODO: Send alerts if issues detected
+            time.sleep(60)
+
+# Run monitor
+if __name__ == '__main__':
+    monitor = SystemMonitor()
+    monitor.monitor_loop()
+Step 4: Implement AI Prediction Module
+Create predictor.py:
+
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import StandardScaler
+import pickle
+from pathlib import Path
+
+class MetricsPredictor:
+    """AI-based metrics prediction"""
+    
+    def __init__(self, model_dir='models'):
+        self.model_dir = Path(model_dir)
+        self.model_dir.mkdir(exist_ok=True)
+        self.model = None
+        self.scaler = StandardScaler()
+        
+    def prepare_features(self, df):
+        """
+        Prepare features for training/prediction.
+        TODO: Create time-based features from timestamp
+        TODO: Encode categorical variables
+        Returns: feature matrix
+        """
+        # TODO: Extract hour, day_of_week from timestamp
+        # TODO: Encode service names
+        # TODO: Create lag features (previous values)
+        # TODO: Scale features
+        pass
+    
+    def train_model(self, historical_data):
+        """
+        Train prediction model on historical data.
+        TODO: Prepare features and train RandomForest
+        """
+        # TODO: Prepare features and target
+        # TODO: Split train/test
+        # TODO: Train RandomForestRegressor
+        # TODO: Save model
+        pass
+    
+    def predict_next_hour(self, service, recent_data):
+        """
+        Predict metrics for next hour.
+        TODO: Load model, prepare features, make predictions
+        Returns: dict with predicted metrics
+        """
+        # TODO: Load trained model
+        # TODO: Prepare features from recent_data
+        # TODO: Make predictions
+        # TODO: Return predictions as dict
+        pass
+    
+    def detect_anomalies(self, actual, predicted):
+        """
+        Detect anomalies by comparing actual vs predicted.
+        TODO: Calculate deviation and flag anomalies
+        """
+        # TODO: Calculate percentage difference
+        # TODO: Flag if difference > threshold (e.g., 30%)
+        pass
+
+# Test predictor
+if __name__ == '__main__':
+    predictor = MetricsPredictor()
+    print("Predictor initialized")
+Step 5: Create Main Orchestration Script
+Create main.py:
+
+#!/usr/bin/env python3
+import sys
+import time
+from multiprocessing import Process
+from ingestion import MetricsIngestion
+from spark_processor import SparkProcessor
+from db_manager import ClickHouseManager
+from api_server import app
+from workflow import AIOpsWorkflow
+from monitor import SystemMonitor
+
+def setup_system():
+    """Initialize system components"""
+    print("Setting up AIOps system...")
+    
+    # Initialize database
+    db = ClickHouseManager()
+    db.create_tables()
+    print("Database initialized")
+    
+    # Generate initial data
+    ingestion = MetricsIngestion()
+    for i in range(3):
+        ingestion.ingest_batch(100)
+    print("Initial data generated")
+    
+    # Process initial data
+    processor = SparkProcessor()
+    # TODO: Process initial data batch
+    print("Initial processing complete")
+
+def run_api_server():
+    """Run API server in separate process"""
+    app.run(host='0.0.0.0', port=5000, debug=False)
+
+def run_workflow():
+    """Run workflow automation"""
+    workflow = AIOpsWorkflow()
+    workflow.start()
+
+def run_monitor():
+    """Run system monitor"""
+    monitor = SystemMonitor()
+    monitor.monitor_loop()
+
+if __name__ == '__main__':
+    # Setup system
+    setup_system()
+    
+    # Start components in separate processes
+    api_process = Process(target=run_api_server)
+    workflow_process = Process(target=run_workflow)
+    monitor_process = Process(target=run_monitor)
+    
+    api_process.start()
+    print("API server started on port 5000")
+    
+    workflow_process.start()
+    print("Workflow automation started")
+    
+    monitor_process.start()
+    print("System monitor started")
+    
+    print("\nAIOps system is running!")
+    print("API available at: http://localhost:5000")
+    print("Press Ctrl+C to stop")
+    
+    try:
+        api_process.join()
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+        api_process.terminate()
+        workflow_process.terminate()
+        monitor_process.terminate()
+Verification
+Step 1: Complete Implementation
+Complete all TODO sections in the code files based on the function signatures and comments provided.
+
+Step 2: Test Individual Components
+# Test ingestion
+python3 ingestion.py
+
+# Verify data files created
+ls -lh data/
+
+# Test Spark processing
+python3 spark_processor.py
+
+# Test database
+python3 db_manager.py
+
+# Verify tables created
+docker exec -it clickhouse-server clickhouse-client --query "SHOW TABLES"
+Step 3: Start the Complete System
+# Make main script executable
+chmod +x main.py
+
+# Run the system
+python3 main.py
+Step 4: Test API Endpoints
+Open a new terminal:
+
+# Test health endpoint
+curl http://localhost:5000/health
+
+# Test metrics endpoint
+curl http://localhost:5000/metrics
+
+# Test anomalies endpoint
+curl http://localhost:5000/anomalies
+
+# Test prediction endpoint
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"service": "web"}'
+Step 5: Verify Data Flow
+# Check ClickHouse data
+docker exec -it clickhouse-server clickhouse-client --query \
+  "SELECT service, count() FROM metrics GROUP BY service"
+
+# Check anomalies
+docker exec -it clickhouse-server clickhouse-client --query \
+  "SELECT * FROM aggregated_metrics WHERE is_anomaly = 1 LIMIT 10"
+
+# Check logs
+tail -f logs/*.log
+Expected Outcomes
+After completing this lab, you should have:
+
+Functional ingestion pipeline generating simulated operational metrics
+Spark processing layer computing aggregations and detecting anomalies
+ClickHouse database storing raw and processed metrics
+REST API exposing metrics and predictions
+Automated workflow running ingestion and processing every 5 minutes
+Monitoring system checking health and sending alerts
+AI prediction module forecasting future metrics
+Troubleshooting Tips
+ClickHouse connection issues:
+
+# Check if ClickHouse is running
+docker ps | grep clickhouse
+
+# Restart if needed
+docker restart clickhouse-server
+Spark memory errors:
+
+# Reduce batch size in ingestion
+# Adjust Spark memory in spark_processor.py config
+Port already in use:
+
+# Find process using port 5000
+sudo lsof -i :5000
+
+# Kill process or change port in api_server.py
+Import errors:
+
+# Ensure virtual environment is activated
+source venv/bin/activate
+
+# Reinstall packages
+pip install -r requirements.txt
+Conclusion
+You have successfully built an end-to-end AIOps system that:
+
+Ingests operational metrics from multiple sources
+Processes data at scale using Apache Spark
+Stores time-series data efficiently in ClickHouse
+Exposes data through REST APIs
+Automates workflows with scheduling
+Monitors system health and sends alerts
+Predicts future metrics using machine learning
+This architecture demonstrates core AIOps principles: automation, intelligent analysis, and proactive problem detection. In production environments, this system would scale to handle millions of metrics per second and integrate with real monitoring tools like Prometheus, Grafana, and incident management platforms.
