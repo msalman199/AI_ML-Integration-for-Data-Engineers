@@ -1,0 +1,493 @@
+Predictive Alert Systems
+Prerequisites
+Basic Python programming knowledge
+Understanding of Linux command line operations
+Familiarity with log file formats
+Basic understanding of machine learning concepts (classification, training/testing)
+Comfortable with package installation using pip
+Learning Objectives
+By completing this lab, you will:
+
+Build a machine learning model to predict system alerts from log patterns
+Process and extract features from system logs
+Train a classification model for alert prediction
+Integrate the trained model with live log monitoring
+Evaluate model performance and accuracy
+Environment Setup
+Click the Start Lab button to provision your Linux machine. Once connected via SSH, install the required tools:
+
+# Update package manager
+sudo apt update
+
+# Install Python and pip
+sudo apt install -y python3 python3-pip python3-venv
+
+# Create project directory
+mkdir -p ~/predictive-alerts
+cd ~/predictive-alerts
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install required packages
+pip install scikit-learn pandas numpy
+Task 1: Train Prediction Model
+Step 1: Generate Training Data
+Create a script to generate synthetic log data with alert patterns:
+
+nano generate_logs.py
+Add the following starter code:
+
+import random
+import json
+from datetime import datetime, timedelta
+
+def generate_log_entry(timestamp, severity, cpu_usage, memory_usage, error_count, alert):
+    """
+    Generate a single log entry with system metrics.
+    
+    Args:
+        timestamp: Log timestamp
+        severity: Log severity level
+        cpu_usage: CPU usage percentage
+        memory_usage: Memory usage percentage
+        error_count: Number of errors in time window
+        alert: Boolean indicating if alert should trigger
+    
+    Returns:
+        Dictionary containing log entry
+    """
+    # TODO: Create and return a dictionary with all parameters
+    pass
+
+def generate_training_data(num_samples=1000, output_file='training_logs.json'):
+    """
+    Generate synthetic training data with normal and alert conditions.
+    
+    Args:
+        num_samples: Number of log entries to generate
+        output_file: Output JSON file path
+    """
+    logs = []
+    start_time = datetime.now() - timedelta(days=7)
+    
+    for i in range(num_samples):
+        timestamp = start_time + timedelta(minutes=i)
+        
+        # TODO: Implement logic to create alert conditions
+        # Alert conditions: high CPU (>85%) OR high memory (>90%) OR errors (>5)
+        # Normal conditions: moderate resource usage, few errors
+        
+        # TODO: Randomly decide if this should be an alert scenario (30% probability)
+        
+        # TODO: Generate appropriate metrics based on alert/normal condition
+        
+        # TODO: Create log entry and append to logs list
+        
+        pass
+    
+    # TODO: Write logs to JSON file
+    pass
+
+if __name__ == "__main__":
+    generate_training_data()
+    print("Training data generated: training_logs.json")
+Run the script:
+
+python generate_logs.py
+Step 2: Build Feature Extraction Module
+Create a module to extract features from logs:
+
+nano feature_extractor.py
+import json
+import pandas as pd
+
+class LogFeatureExtractor:
+    """Extract features from log entries for ML model."""
+    
+    def __init__(self):
+        self.severity_map = {'INFO': 0, 'WARNING': 1, 'ERROR': 2, 'CRITICAL': 3}
+    
+    def load_logs(self, log_file):
+        """
+        Load logs from JSON file.
+        
+        Args:
+            log_file: Path to JSON log file
+            
+        Returns:
+            List of log dictionaries
+        """
+        # TODO: Read and return JSON data from file
+        pass
+    
+    def extract_features(self, logs):
+        """
+        Extract feature matrix and labels from logs.
+        
+        Args:
+            logs: List of log dictionaries
+            
+        Returns:
+            Tuple of (features_df, labels_series)
+        """
+        # TODO: Create lists to store features and labels
+        
+        # TODO: Iterate through logs and extract:
+        # - severity (mapped to numeric)
+        # - cpu_usage
+        # - memory_usage
+        # - error_count
+        # - alert (label)
+        
+        # TODO: Create pandas DataFrame for features
+        # TODO: Create pandas Series for labels
+        
+        # TODO: Return features and labels
+        pass
+
+if __name__ == "__main__":
+    extractor = LogFeatureExtractor()
+    logs = extractor.load_logs('training_logs.json')
+    features, labels = extractor.extract_features(logs)
+    print(f"Extracted {len(features)} samples with {len(features.columns)} features")
+Step 3: Train the Prediction Model
+Create the model training script:
+
+nano train_model.py
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+import pickle
+from feature_extractor import LogFeatureExtractor
+
+class AlertPredictor:
+    """Train and save alert prediction model."""
+    
+    def __init__(self):
+        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.extractor = LogFeatureExtractor()
+    
+    def train(self, log_file, test_size=0.2):
+        """
+        Train the alert prediction model.
+        
+        Args:
+            log_file: Path to training log file
+            test_size: Proportion of data for testing
+        """
+        # TODO: Load logs using extractor
+        
+        # TODO: Extract features and labels
+        
+        # TODO: Split data into training and testing sets
+        
+        # TODO: Train the model on training data
+        
+        # TODO: Make predictions on test data
+        
+        # TODO: Print classification report and confusion matrix
+        
+        pass
+    
+    def save_model(self, model_file='alert_model.pkl'):
+        """
+        Save trained model to file.
+        
+        Args:
+            model_file: Output file path for model
+        """
+        # TODO: Save model using pickle
+        pass
+    
+    def load_model(self, model_file='alert_model.pkl'):
+        """
+        Load trained model from file.
+        
+        Args:
+            model_file: Path to saved model file
+        """
+        # TODO: Load model using pickle
+        pass
+    
+    def predict(self, features):
+        """
+        Predict alert for given features.
+        
+        Args:
+            features: Feature dictionary or DataFrame
+            
+        Returns:
+            Prediction (0 or 1) and probability
+        """
+        # TODO: Convert features to appropriate format
+        # TODO: Make prediction
+        # TODO: Return prediction and probability
+        pass
+
+if __name__ == "__main__":
+    predictor = AlertPredictor()
+    predictor.train('training_logs.json')
+    predictor.save_model()
+    print("Model trained and saved successfully")
+Run the training:
+
+python train_model.py
+Task 2: Integrate with Live Logs
+Step 1: Create Log Monitor
+Build a log monitoring system that uses the trained model:
+
+nano log_monitor.py
+import time
+import json
+from datetime import datetime
+from train_model import AlertPredictor
+from feature_extractor import LogFeatureExtractor
+
+class LogMonitor:
+    """Monitor logs and predict alerts in real-time."""
+    
+    def __init__(self, model_file='alert_model.pkl'):
+        self.predictor = AlertPredictor()
+        self.predictor.load_model(model_file)
+        self.extractor = LogFeatureExtractor()
+        self.alert_threshold = 0.7
+    
+    def parse_log_line(self, log_entry):
+        """
+        Parse a log entry into features.
+        
+        Args:
+            log_entry: Dictionary containing log data
+            
+        Returns:
+            Feature dictionary
+        """
+        # TODO: Extract relevant features from log_entry
+        # TODO: Map severity to numeric value
+        # TODO: Return feature dictionary
+        pass
+    
+    def check_alert(self, log_entry):
+        """
+        Check if log entry should trigger an alert.
+        
+        Args:
+            log_entry: Dictionary containing log data
+            
+        Returns:
+            Tuple of (should_alert, probability, reason)
+        """
+        # TODO: Parse log entry to features
+        
+        # TODO: Get prediction and probability from model
+        
+        # TODO: Determine if probability exceeds threshold
+        
+        # TODO: Generate reason string based on features
+        
+        # TODO: Return alert decision, probability, and reason
+        pass
+    
+    def monitor_log_file(self, log_file, interval=2):
+        """
+        Monitor a log file for new entries.
+        
+        Args:
+            log_file: Path to log file to monitor
+            interval: Check interval in seconds
+        """
+        print(f"Monitoring {log_file} for alerts...")
+        print(f"Alert threshold: {self.alert_threshold}")
+        print("-" * 60)
+        
+        # TODO: Implement file monitoring logic
+        # TODO: Read new log entries
+        # TODO: Check each entry for alerts
+        # TODO: Print alert information when detected
+        # TODO: Sleep for interval between checks
+        pass
+
+def generate_live_logs(output_file='live_logs.json', duration=60):
+    """
+    Generate simulated live logs for testing.
+    
+    Args:
+        output_file: Output file for logs
+        duration: How long to generate logs (seconds)
+    """
+    import random
+    
+    # TODO: Generate log entries over time
+    # TODO: Include some alert conditions randomly
+    # TODO: Append to file as they're generated
+    # TODO: Simulate real-time by adding delays
+    pass
+
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == 'generate':
+        print("Generating live logs for 60 seconds...")
+        generate_live_logs()
+    else:
+        monitor = LogMonitor()
+        monitor.monitor_log_file('live_logs.json')
+Step 2: Test the Integration
+Generate live logs in one terminal:
+
+python log_monitor.py generate
+In another terminal (or after generation completes), run the monitor:
+
+python log_monitor.py
+Step 3: Create Alert Dashboard
+Build a simple dashboard to display alerts:
+
+nano alert_dashboard.py
+import json
+from datetime import datetime
+from collections import deque
+
+class AlertDashboard:
+    """Display and track alerts from the monitoring system."""
+    
+    def __init__(self, max_alerts=50):
+        self.alerts = deque(maxlen=max_alerts)
+        self.stats = {
+            'total_alerts': 0,
+            'high_cpu_alerts': 0,
+            'high_memory_alerts': 0,
+            'error_alerts': 0
+        }
+    
+    def add_alert(self, timestamp, severity, probability, reason, metrics):
+        """
+        Add a new alert to the dashboard.
+        
+        Args:
+            timestamp: Alert timestamp
+            severity: Alert severity
+            probability: Prediction probability
+            reason: Alert reason
+            metrics: Dictionary of system metrics
+        """
+        # TODO: Create alert dictionary
+        # TODO: Add to alerts deque
+        # TODO: Update statistics
+        pass
+    
+    def display_summary(self):
+        """Display alert summary statistics."""
+        # TODO: Print formatted statistics
+        # TODO: Show total alerts by category
+        # TODO: Display recent alert trends
+        pass
+    
+    def display_recent_alerts(self, count=10):
+        """
+        Display most recent alerts.
+        
+        Args:
+            count: Number of recent alerts to show
+        """
+        # TODO: Get last 'count' alerts
+        # TODO: Format and display each alert
+        pass
+    
+    def export_alerts(self, output_file='alerts_report.json'):
+        """
+        Export alerts to JSON file.
+        
+        Args:
+            output_file: Output file path
+        """
+        # TODO: Convert alerts to list
+        # TODO: Write to JSON file with statistics
+        pass
+
+if __name__ == "__main__":
+    # Example usage
+    dashboard = AlertDashboard()
+    
+    # TODO: Load alerts from monitoring system
+    # TODO: Display dashboard
+    pass
+Verification
+Verify Model Training
+Check that the model was trained successfully:
+
+# Verify model file exists
+ls -lh alert_model.pkl
+
+# Check training output shows accuracy metrics
+python train_model.py | grep -E "accuracy|precision|recall"
+Expected output should show accuracy > 80% for a well-trained model.
+
+Verify Log Monitoring
+Test the monitoring system:
+
+# Generate test logs
+python log_monitor.py generate &
+
+# Monitor logs (should detect alerts)
+python log_monitor.py
+
+# Check for alert detections in output
+You should see alerts being detected with probability scores and reasons.
+
+Verify Integration
+Check the complete workflow:
+
+# Verify all components exist
+ls -1 *.py *.pkl *.json
+
+# Expected files:
+# - generate_logs.py
+# - feature_extractor.py
+# - train_model.py
+# - log_monitor.py
+# - alert_dashboard.py
+# - alert_model.pkl
+# - training_logs.json
+Troubleshooting
+Model accuracy is low (<70%)
+
+Increase training data samples in generate_logs.py
+Adjust alert condition thresholds
+Retrain with more balanced data
+No alerts detected during monitoring
+
+Lower alert_threshold in LogMonitor (try 0.5)
+Verify live_logs.json contains alert conditions
+Check model loaded correctly
+Import errors
+
+Ensure virtual environment is activated: source venv/bin/activate
+Reinstall packages: pip install scikit-learn pandas numpy
+File not found errors
+
+Run scripts from ~/predictive-alerts directory
+Verify all data files were generated successfully
+Conclusion
+You have successfully built a predictive alert system that:
+
+Trains a machine learning model on historical log data
+Extracts meaningful features from system logs
+Predicts potential alerts before they become critical
+Monitors live logs and triggers alerts based on predictions
+Provides a foundation for proactive system monitoring
+This approach enables proactive incident management by predicting issues before they escalate, reducing downtime and improving system reliability. The techniques learned here apply to various monitoring scenarios including application performance, security threats, and infrastructure health.
+
+Key Takeaways:
+
+Feature engineering is critical for log analysis
+Random Forest classifiers work well for alert prediction
+Real-time monitoring requires efficient data processing
+Model accuracy depends on quality training data
+Next Steps:
+
+Experiment with different ML algorithms (SVM, Neural Networks)
+Add more sophisticated features (time-series patterns, anomaly scores)
+Implement alert prioritization and escalation
+Integrate with notification systems (email, Slack)
