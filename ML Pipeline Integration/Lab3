@@ -1,0 +1,419 @@
+ML Pipeline Integration
+Prerequisites
+Basic Python programming knowledge
+Understanding of machine learning concepts (training, models, predictions)
+Familiarity with Linux command line
+Completion of previous ETL pipeline labs or equivalent experience
+Basic understanding of data preprocessing
+Learning Objectives
+By the end of this lab, you will be able to:
+
+Integrate machine learning model training into an automated ETL pipeline
+Automate model training jobs using scheduling tools
+Deploy a trained ML model for inference
+Create a complete end-to-end ML pipeline on a single machine
+Environment Setup
+Step 1: Update System and Install Dependencies
+sudo apt update
+sudo apt install -y python3-pip python3-venv cron
+Step 2: Create Project Directory Structure
+mkdir -p ~/ml-pipeline/{data,models,scripts,logs}
+cd ~/ml-pipeline
+Step 3: Set Up Python Virtual Environment
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install scikit-learn pandas numpy joblib flask
+Task 1: Build an Automated Training Pipeline
+Step 1: Create Sample Dataset Generator
+Create scripts/generate_data.py:
+
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+def generate_sample_data(n_samples=1000):
+    """
+    Generate synthetic customer data for churn prediction.
+    
+    Args:
+        n_samples: Number of samples to generate
+    
+    Returns:
+        DataFrame with features and target
+    """
+    np.random.seed(42)
+    
+    # TODO: Generate features (age, tenure, monthly_charges, total_charges)
+    # TODO: Create target variable (churn: 0 or 1)
+    # TODO: Return as pandas DataFrame
+    
+    pass
+
+def save_data(df, filepath):
+    """Save DataFrame to CSV with timestamp."""
+    # TODO: Implement data saving with timestamp in filename
+    pass
+
+if __name__ == "__main__":
+    # TODO: Generate data and save to data directory
+    pass
+Complete the implementation to generate realistic customer data with features that correlate to churn.
+
+Step 2: Create Training Script
+Create scripts/train_model.py:
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+import joblib
+from datetime import datetime
+import os
+
+def load_latest_data(data_dir):
+    """
+    Load the most recent dataset from data directory.
+    
+    Args:
+        data_dir: Path to data directory
+    
+    Returns:
+        DataFrame with loaded data
+    """
+    # TODO: Find the most recent CSV file in data_dir
+    # TODO: Load and return the data
+    pass
+
+def preprocess_data(df):
+    """
+    Preprocess data for training.
+    
+    Args:
+        df: Raw DataFrame
+    
+    Returns:
+        X: Features, y: Target
+    """
+    # TODO: Separate features and target
+    # TODO: Handle any necessary preprocessing
+    pass
+
+def train_model(X_train, y_train):
+    """
+    Train Random Forest classifier.
+    
+    Args:
+        X_train: Training features
+        y_train: Training labels
+    
+    Returns:
+        Trained model
+    """
+    # TODO: Initialize RandomForestClassifier with appropriate parameters
+    # TODO: Fit the model
+    # TODO: Return trained model
+    pass
+
+def evaluate_model(model, X_test, y_test):
+    """Evaluate model and print metrics."""
+    # TODO: Make predictions
+    # TODO: Calculate and print accuracy and classification report
+    pass
+
+def save_model(model, model_dir):
+    """Save model with timestamp."""
+    # TODO: Save model using joblib with timestamp
+    # TODO: Create a symlink to 'latest_model.pkl' for easy access
+    pass
+
+if __name__ == "__main__":
+    # TODO: Implement complete training pipeline
+    # 1. Load data
+    # 2. Preprocess
+    # 3. Split train/test
+    # 4. Train model
+    # 5. Evaluate
+    # 6. Save model
+    pass
+Step 3: Create Pipeline Orchestration Script
+Create scripts/run_pipeline.sh:
+
+#!/bin/bash
+
+# ML Pipeline Orchestration Script
+SCRIPT_DIR="$HOME/ml-pipeline/scripts"
+LOG_DIR="$HOME/ml-pipeline/logs"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# TODO: Activate virtual environment
+
+# TODO: Run data generation script and log output
+
+# TODO: Run training script and log output
+
+# TODO: Check if training was successful and log status
+
+echo "Pipeline completed at $(date)"
+Make it executable:
+
+chmod +x scripts/run_pipeline.sh
+Step 4: Automate Training Job with Cron
+Create a cron job to run the pipeline daily:
+
+# Open crontab editor
+crontab -e
+Add the following line (adjust time as needed):
+
+# Run ML pipeline daily at 2 AM
+0 2 * * * /home/$USER/ml-pipeline/scripts/run_pipeline.sh >> /home/$USER/ml-pipeline/logs/cron.log 2>&1
+For testing purposes, create a test entry that runs every 5 minutes:
+
+# Test entry - runs every 5 minutes
+*/5 * * * * /home/$USER/ml-pipeline/scripts/run_pipeline.sh >> /home/$USER/ml-pipeline/logs/cron.log 2>&1
+Verify cron job is scheduled:
+
+crontab -l
+Task 2: Deploy Model for Inference
+Step 1: Create Model Serving API
+Create scripts/serve_model.py:
+
+from flask import Flask, request, jsonify
+import joblib
+import numpy as np
+import os
+
+app = Flask(__name__)
+
+# Global model variable
+model = None
+
+def load_model():
+    """
+    Load the latest trained model.
+    
+    Returns:
+        Loaded model object
+    """
+    # TODO: Load model from models/latest_model.pkl
+    # TODO: Handle case where model doesn't exist
+    pass
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint."""
+    # TODO: Return JSON with status and model loaded state
+    pass
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    """
+    Prediction endpoint.
+    
+    Expected JSON format:
+    {
+        "features": [value1, value2, value3, value4]
+    }
+    
+    Returns:
+        JSON with prediction and probability
+    """
+    # TODO: Extract features from request JSON
+    # TODO: Validate input
+    # TODO: Make prediction using loaded model
+    # TODO: Return prediction and probability as JSON
+    pass
+
+@app.route('/reload', methods=['POST'])
+def reload_model():
+    """Reload the model (useful after retraining)."""
+    # TODO: Reload the model
+    # TODO: Return success/failure status
+    pass
+
+if __name__ == '__main__':
+    # TODO: Load model on startup
+    # TODO: Run Flask app on port 5000
+    pass
+Step 2: Create Model Deployment Script
+Create scripts/deploy_model.sh:
+
+#!/bin/bash
+
+# Model Deployment Script
+SCRIPT_DIR="$HOME/ml-pipeline/scripts"
+LOG_DIR="$HOME/ml-pipeline/logs"
+PID_FILE="$HOME/ml-pipeline/model_server.pid"
+
+start_server() {
+    # TODO: Activate virtual environment
+    # TODO: Start Flask server in background
+    # TODO: Save PID to file
+    echo "Model server started"
+}
+
+stop_server() {
+    # TODO: Check if PID file exists
+    # TODO: Kill process if running
+    # TODO: Remove PID file
+    echo "Model server stopped"
+}
+
+restart_server() {
+    # TODO: Stop then start server
+    echo "Model server restarted"
+}
+
+case "$1" in
+    start)
+        start_server
+        ;;
+    stop)
+        stop_server
+        ;;
+    restart)
+        restart_server
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+Make it executable:
+
+chmod +x scripts/deploy_model.sh
+Step 3: Create Test Client
+Create scripts/test_inference.py:
+
+import requests
+import json
+
+def test_health():
+    """Test health check endpoint."""
+    # TODO: Send GET request to /health
+    # TODO: Print response
+    pass
+
+def test_prediction(features):
+    """
+    Test prediction endpoint.
+    
+    Args:
+        features: List of feature values
+    """
+    # TODO: Send POST request to /predict with features
+    # TODO: Print prediction results
+    pass
+
+if __name__ == "__main__":
+    base_url = "http://localhost:5000"
+    
+    # TODO: Test health endpoint
+    
+    # TODO: Test prediction with sample data
+    # Example: [35, 12, 65.5, 786.0] (age, tenure, monthly_charges, total_charges)
+    
+    pass
+Verification
+Step 1: Test Data Generation and Training
+cd ~/ml-pipeline
+source venv/bin/activate
+
+# Generate data
+python3 scripts/generate_data.py
+
+# Verify data was created
+ls -lh data/
+
+# Run training
+python3 scripts/train_model.py
+
+# Verify model was saved
+ls -lh models/
+Expected output: You should see CSV files in data/ and model files in models/.
+
+Step 2: Test Pipeline Orchestration
+# Run the complete pipeline
+./scripts/run_pipeline.sh
+
+# Check logs
+cat logs/pipeline_*.log
+Expected output: Logs showing data generation, training progress, and model metrics.
+
+Step 3: Verify Cron Job
+# Check cron is running
+sudo systemctl status cron
+
+# Monitor cron logs (wait 5 minutes if using test schedule)
+tail -f logs/cron.log
+Step 4: Test Model Deployment
+# Start model server
+./scripts/deploy_model.sh start
+
+# Wait a few seconds for server to start
+sleep 3
+
+# Test the API
+python3 scripts/test_inference.py
+
+# Check server logs
+cat logs/model_server.log
+Expected output:
+
+Health check returns status 200
+Prediction returns churn probability
+Server logs show incoming requests
+Step 5: Test Model Reload After Retraining
+# Retrain model
+python3 scripts/train_model.py
+
+# Reload model in server
+curl -X POST http://localhost:5000/reload
+
+# Test prediction again
+python3 scripts/test_inference.py
+Step 6: Cleanup
+# Stop model server
+./scripts/deploy_model.sh stop
+
+# Remove test cron job
+crontab -e
+# Delete or comment out the test entry (*/5 * * * *)
+Troubleshooting Tips
+Issue: Cron job not running
+
+Check cron service: sudo systemctl status cron
+Verify cron syntax: Use online cron validators
+Check permissions: Ensure scripts are executable
+Review logs: grep CRON /var/log/syslog
+Issue: Model server won't start
+
+Check port availability: netstat -tuln | grep 5000
+Verify virtual environment activation
+Check Python dependencies: pip list
+Review Flask logs for errors
+Issue: Import errors in scripts
+
+Ensure virtual environment is activated
+Reinstall packages: pip install -r requirements.txt
+Check Python version: python3 --version
+Issue: Model file not found
+
+Verify training completed successfully
+Check models directory: ls -lh models/
+Ensure symlink was created: ls -l models/latest_model.pkl
+Conclusion
+You have successfully built and deployed an automated ML pipeline that:
+
+Generates training data on a schedule
+Trains models automatically using cron jobs
+Deploys models via a REST API for real-time inference
+Supports model reloading without downtime
+This pipeline architecture is fundamental to MLOps practices and can be extended with:
+
+Model versioning and experiment tracking
+A/B testing between model versions
+Monitoring and alerting for model performance
+Integration with data streaming sources
+Containerization with Docker for portability
+The skills learned here form the foundation for building production-grade ML systems in enterprise environments.
